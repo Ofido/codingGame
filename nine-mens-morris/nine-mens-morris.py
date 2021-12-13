@@ -7,6 +7,14 @@ import math
 
 
 def ordenaComandos(command):
+    # Percebi que simplesmente ordenar os comandos possiveis, abre a possibilidade de fazer jogadas de 3 para
+    # eliminar uma peça adversária sempre, já que o comando para colocar e pegar ou mover e pegar é maior que
+    # o comando de apenas mover ou apenas pegar, priorizando assim a "melhor jogada" inicial. Com isso,
+    # conseguir chegar no nivel de Madeira, porem preciso chegar ao nivel de bronze para uma conquista, então preciso
+    # pensar em como melhorar a ordenação para ganhar.
+    # Caminhos:
+    # 1 - olhar como o oponente começa e analisar isso para o proximo passo.
+    # 2 - analisar se for o primeiro a jogar ou o segundo e fazer um pensamento estático somente para alcançar a proxima classificação.
     command.sort()
 
 player_id = int(input())  # playerId (0,1)
