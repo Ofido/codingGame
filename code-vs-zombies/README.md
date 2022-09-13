@@ -24,6 +24,7 @@ https://www.youtube.com/watch?v=4uSzNfy8RMA
 que acabou me encorajando a tentar procurar uma solução sozinho!
 
 ## checklist:
+- tentar colocar o código que fiz para funcionar (ps, quando um zumbi entra no range o personagem vai na direção oposta e ele fica parado)
 - coletar as entradas dos humanos, removendo os ids
 - coletar as entradas dos zumbis, removendo os ids
   - pensar se irei usar a direção de movimentação para prever o proximo alvo
