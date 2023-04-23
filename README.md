@@ -7,3 +7,9 @@ Como adoro esse site decidi começar a potar minhas soluções (geniais, pregui�
 Programarei na linguagem que for mais habitual para a resolução do problema, seja: Java, Python, Type, Lua, Js, etc...
 
 https://www.codingame.com/start
+
+# Games tentados:
+
+code vs zombies
+game of drones
+nine mens morris

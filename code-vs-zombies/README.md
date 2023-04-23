@@ -25,18 +25,4 @@ que acabou me encorajando a tentar procurar uma solução sozinho!
 
 outro projeto para ver:
 https://github.com/Coding-Bugs/Code-vs-Zombies/blob/stable/Code-Vs-Zombies.py
-
-## checklist:
-- tentar colocar o código que fiz para funcionar (ps, quando um zumbi entra no range o personagem vai na direção oposta e ele fica parado)
-- coletar as entradas dos humanos, removendo os ids
-- coletar as entradas dos zumbis, removendo os ids
-  - pensar se irei usar a direção de movimentação para prever o proximo alvo
-    - (distancia vetorial entre x,y e x_next,y_next)
-  - se não irei coletar pensar em qual das duas usar
-- coletar os meus dados
-  - 'range'
-  - posição
-  - vetor de movimento?
-- fazer a analise de melhor movimento:
-  - baseado em calculo recursivo de score (acho que é monte pascal o nome disso)
-  - baseado em calculo relativo vetorial ?
+https://github.com/mploux/cg-code-vs-zombie/blob/main/main.ts#L135

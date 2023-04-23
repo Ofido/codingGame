@@ -1,168 +1,282 @@
-# https://www.youtube.com/watch?v=4uSzNfy8RMA
+# import math
 import sys
-import math
-import copy
 
-global pontuacao_old
-global movimentos_old
-pontuacao_old:int = -10
-movimentos_old:list = []
+# set default values
+GAME_ZONE_WIDE = 16000
+GAME_ZONE_HIGH = 9000
 
-def fibonnacci(x):
-    fib = [0,1,2,4,7,12,20,33,54,88,143,232,376,609,986,1596,2583,4180,6764,10945,17710,28656,46367,75024,121392,196417,317810,514228,832039,1346268,2178308]
-    return fib[min(x, 30)]
+PLAYER_SPEED = 1000
+PLAYER_KILL_RADIUS = 2000
 
-def get_pontuacao_atual():
-    global pontuacao_old
-    print(f'pontuacao_old - get_pontuacao_atual', file = sys.stderr)
-    print(pontuacao_old, file = sys.stderr)
-    return pontuacao_old
-
-def set_pontuacao_atual(pontuacao:int):
-    global pontuacao_old
-    print(f'pontuacao_old - set_pontuacao_atual', file = sys.stderr)
-    print(pontuacao_old, file = sys.stderr)
-    print(f'pontuacao - set_pontuacao_atual', file = sys.stderr)
-    print(pontuacao, file = sys.stderr)
-    pontuacao_old = pontuacao
-
-def pop_movimentos_atual():
-    global movimentos_old
-    print(f'movimentos_old - pop_movimentos_atual', file = sys.stderr)
-    print(movimentos_old, file = sys.stderr)
-    return movimentos_old.pop(0)
-
-def get_movimentos_atual():
-    global movimentos_old
-    print(f'movimentos_old - get_movimentos_atual', file = sys.stderr)
-    print(movimentos_old, file = sys.stderr)
-    return movimentos_old
-
-def set_movimentos_atual(movimentos:list):
-    global movimentos_old
-    print(f'movimentos_old - set_movimentos_atual', file = sys.stderr)
-    print(movimentos_old, file = sys.stderr)
-    print(f'movimentos - set_movimentos_atual', file = sys.stderr)
-    print(movimentos, file = sys.stderr)
-    movimentos_old = movimentos
-
-def movimentos_validos(posicao_atual) -> list:
-    distancia = 1000
-    direcoes = 16
-    movimentos_validos = [posicao_atual]
-    for deg in range(0, 360, 360//direcoes):
-        x = math.floor(posicao_atual[0] + math.sin(math.radians(deg))*distancia)
-        y = math.floor(posicao_atual[1] - math.cos(math.radians(deg))*distancia)
-        if x < 0:
-            x = 0
-        if x > 16000:
-            x = 16000
-        if y < 0:
-            y = 0
-        if y > 9000:
-            y = 9000
-        movimentos_validos.append([x, y])
-    return movimentos_validos
-
-# Save humans, destroy zombies!
-def melhores_movimentos(eu:list[int], humanos:list, zumbis:list, profundidade:int) -> tuple[list, int]:
-    if profundidade <= 0:
-        return [], 0
-
-    possibilidades = movimentos_validos(eu)
-    movimentos = []
-    melhor_pontuacao = -1
-
-    # verifica para saber a melhor jogada
-    for possibilidade in possibilidades:
-        agora_humanos, agora_zumbis = verifica_possibilidade(possibilidade, humanos, zumbis)
-        pontuacao_possivel = calc_pontuacao_possivel(possibilidade, humanos, zumbis)
-        movimentos_interno, pontuacao_interno = melhores_movimentos(possibilidade, agora_humanos, agora_zumbis, profundidade - 1)
-        if (pontuacao_soma := pontuacao_possivel + pontuacao_interno) > melhor_pontuacao:
-            melhor_pontuacao = pontuacao_soma
-            movimentos_interno.insert(0, possibilidade)
-            movimentos = movimentos_interno
+ZOMBIE_SPEED = 400
+ZOMBIE_KILL_RADIUS = 400
 
 
-    print(f'profundidade - return - melhores_movimentos', file = sys.stderr)
-    print(profundidade, file = sys.stderr)
-    print(f'melhor_pontuacao - return - melhores_movimentos', file = sys.stderr)
-    print(melhor_pontuacao, file = sys.stderr)
-    print(f'movimentos - return - melhores_movimentos', file = sys.stderr)
-    print(movimentos, file = sys.stderr)
+def aux(x, y) -> str:
+    return f"{x} {y}"
 
-    return movimentos, melhor_pontuacao
 
-def get_zumbis_longe(me, zumbis):
-    # if not zumbis:
-    #     return []
-    distancia_player = 2000
-    zumbis_longe = []
-    for zumbi in zumbis:
-        if math.dist(zumbi[3:], me) > distancia_player:
-            zumbis_longe.append(zumbi)
+# objects
+class human:
+    id: int
+    old_x: int
+    old_y: int
+    pos_x: int
+    pos_y: int
+    is_alive: bool
+    is_secure: bool
+    have_zombie_comming: bool
 
-    return zumbis_longe
+    def __init__(self, id: int, pos_x: int, pos_y: int) -> None:
+        self.id = id
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.old_x = 0
+        self.old_y = 0
+        self.is_alive = True
+        self.is_secure = True
 
-def calc_pontuacao_possivel(me, humanos, zumbis):
-    zumbis_perto = len(zumbis) - len(get_zumbis_longe(me, zumbis))
-    score = fibonnacci(zumbis_perto) * len(humanos) * len(humanos) * 10
-    return score
+    def move(self, pos_x: int, pos_y: int) -> None:
+        self.old_x = self.pos_x
+        self.old_y = self.pos_y
+        self.pos_x = pos_x
+        self.pos_y = pos_y
 
-#idk
-def getNearestHuman(zombie, humanpos, playerpos):
-    playerpos = copy.deepcopy(playerpos)
-    dist = float("inf")
-    closest = []
-    for human in humanpos:
-        d = math.dist(human[1:], zombie[3:])
-        if d < dist:
-            closest = human
-            dist = d
-    d = math.dist(playerpos, zombie[3:])
-    if d < dist:
-        closest = playerpos
-        closest.insert(0, -1)
-        dist = d
-    return closest
+    def att_zombie_comming(self, zombie) -> None:
+        self.have_zombie_comming = zombie.line_equ(self.pos_x, self.pos_y)
 
-def verifica_possibilidade(me, humanos, zumbis):
-    zumbis_longe = get_zumbis_longe(me, zumbis)
-    novos_humanos = []
+    def get_pos(self) -> tuple:
+        return self.pos_x, self.pos_y
 
-    for zombie in zumbis_longe:
-        for human in humanos:
-            if human[1] == zombie[1] and human[2] == zombie[2]:
-                continue
-            else:
-                novos_humanos.append(human)
+    def __to_dict__(self) -> dict:
+        return {
+            "pos_x": self.pos_x,
+            "pos_y": self.pos_y,
+            "is_alive": self.is_alive,
+            "is_secure": self.is_secure,
+        }
 
-    zumbi_movimentado = []
+    def __str__(self) -> str:
+        return f"human {self.id} att: {self.__to_dict__()}"
 
-    for zumbi in zumbis_longe:
-        newpos = getNearestHuman(zumbi, novos_humanos, me)
-        zumbi_movimentado.append([zumbi[0], 0, 0, newpos[0], newpos[1]])
 
-    return novos_humanos, zumbi_movimentado
+class humans:
+    list_of_humans: dict[int, human]
+    died_humans: dict[int, human]
+    turn_movies: list[int]
 
+    def __init__(self, list_of_humans: list) -> None:
+        self.list_of_humans = {}
+        self.died_humans = {}
+        self.turn_movies = []
+        for a in list_of_humans:
+            hu = human(*a)
+            self.list_of_humans[hu.id] = hu
+
+    def move_someone(self, id, x, y):
+        self.list_of_humans[id].move(x, y)
+        self.turn_movies.append(id)
+
+    def zombie_move(self, zombie):
+        for hu in self.list_of_humans:
+            self.list_of_humans[hu].is_secure = not zombie.line_equ(
+                *self.list_of_humans[hu].get_pos()
+            )
+
+    def quantity_humans(self):
+        return len(self.list_of_humans)
+
+    def get_survivor_pos(self):
+        return self.list_of_humans[list(self.list_of_humans)[0]].get_pos()
+
+    def reset_turn(self):
+        all_humans_alive = list(self.list_of_humans)
+        for human_movies in self.turn_movies:
+            all_humans_alive.remove(human_movies)
+        for died_human in all_humans_alive:
+            self.died_humans[died_human] = self.list_of_humans[died_human]
+            del self.list_of_humans[died_human]
+
+    def __str__(self) -> str:
+        return "\n".join([str(self.list_of_humans[hu]) for hu in self.list_of_humans])
+
+
+class zombie:
+    id: int
+    pos_x: int
+    pos_y: int
+    future_x: int
+    future_y: int
+    is_alive: bool
+    kill_chance: list[str]
+
+    def __init__(
+        self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int
+    ) -> None:
+        self.id = id
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.future_x = future_x
+        self.future_y = future_y
+        self.is_alive = True
+        self.kill_chance = []
+
+    def get_pos(self) -> tuple:
+        return self.future_x, self.future_y
+
+    def move(self, pos_x: int, pos_y: int, future_x: int, future_y: int) -> None:
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.future_x = future_x
+        self.future_y = future_y
+
+    def line_equ(self, x, y) -> bool:
+        # determinante --> equaçãoda reta de movimentação do zumbi sendo x e y o humano
+        return (
+            (self.pos_x * self.future_y)
+            + (self.pos_y * x)
+            + (self.future_x * y)
+            - (x * self.future_y)
+            - (y * self.pos_x)
+            - (self.future_x * self.pos_y)
+        ) == 0
+
+    def __to_dict__(self):
+        return {
+            "pos_x": self.pos_x,
+            "pos_y": self.pos_y,
+            "future_x": self.future_x,
+            "future_y": self.future_y,
+            "kill_chance": self.kill_chance,
+        }
+
+    def __str__(self) -> str:
+        return f"zombie {self.id} att: {self.__to_dict__()}"
+
+
+class zombies:
+    list_of_zombies: dict[int, zombie]
+
+    def __init__(self, list_of_zombies: list) -> None:
+        self.list_of_zombies = {}
+        for a in list_of_zombies:
+            zo = zombie(*a)
+            self.list_of_zombies[zo.id] = zo
+
+    def get_survivor_pos(self):
+        return self.list_of_zombies[list(self.list_of_zombies)[0]].get_pos()
+
+    def get_zombies(self):
+        return (self.list_of_zombies[z] for z in list(self.list_of_zombies))
+
+    def move_someone(
+        self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int
+    ):
+        self.list_of_zombies[id].move(pos_x, pos_y, future_x, future_y)
+
+    def __str__(self) -> str:
+        return "\n".join([str(self.list_of_zombies[zo]) for zo in self.list_of_zombies])
+
+
+class player:
+    old_x: int
+    old_y: int
+    pos_x: int
+    pos_y: int
+    future_x: int
+    future_y: int
+    kill_chance: list[str]
+    save_chance: list[str]
+
+    def __init__(self, x, y) -> None:
+        self.old_x: int = 0
+        self.old_y: int = 0
+        self.pos_x: int = x
+        self.pos_y: int = y
+        self.future_x: int = 0
+        self.future_y: int = 0
+        self.kill_chance: list[str] = []
+        self.save_chance: list[str] = []
+
+    def move(self, new_x: int, new_y: int) -> None:
+        print("player move", file=sys.stderr, flush=True)
+        # set old
+        self.old_x = self.pos_x
+        self.old_y = self.pos_y
+
+        # set new
+        self.pos_x = new_x
+        self.pos_y = new_y
+
+        # FIXME reset future?
+        self.future_x = 0
+        self.future_y = 0
+
+    def get_pos(self) -> tuple:
+        return self.pos_x, self.pos_y
+
+    def __to_dict__(self):
+        return {
+            "old_x": self.old_x,
+            "old_y": self.old_y,
+            "pos_x": self.pos_x,
+            "pos_y": self.pos_y,
+            "future_x": self.future_x,
+            "future_y": self.future_y,
+            "kill_chance": self.kill_chance,
+            "save_chance": self.save_chance,
+        }
+
+    def __str__(self) -> str:
+        return f"player att: {self.__to_dict__()}"
+
+
+# set dict of entities
+# 'first' game loop
+print("first", file=sys.stderr, flush=True)
+PLAYER: player = player(*[int(i) for i in input().split()])
+print(f"player {PLAYER}", file=sys.stderr, flush=True)
+HUMANS: humans = humans(
+    [[int(j) for j in input().split()] for _ in range(int(input()))]
+)
+print(f"humans {HUMANS}", file=sys.stderr, flush=True)
+ZOMBIES: zombies = zombies(
+    [[int(j) for j in input().split()] for _ in range(int(input()))]
+)
+print(f"zombies {ZOMBIES}", file=sys.stderr, flush=True)
+print(aux(*PLAYER.get_pos()))
 # game loop
-profundidade = 80
 while True:
-    humanos = []
-    zumbis = []
-    eu = [int(i) for i in input().split()]
+    output = ""
+    print("game loop", file=sys.stderr, flush=True)
+    print("set vars", file=sys.stderr, flush=True)
+    print("set player", file=sys.stderr, flush=True)
+    PLAYER.move(*[int(i) for i in input().split()])
     human_count = int(input())
+    print("set human", file=sys.stderr, flush=True)
     for i in range(human_count):
-        humanos.append([int(j) for j in input().split()])
+        HUMANS.move_someone(*[int(j) for j in input().split()])
+
     zombie_count = int(input())
+    print("set zombie", file=sys.stderr, flush=True)
     for i in range(zombie_count):
-        zumbis.append([int(j) for j in input().split()])
+        ZOMBIES.move_someone(*[int(j) for j in input().split()])
 
-    movimentos, pontuacao = melhores_movimentos(eu, humanos, zumbis, profundidade)
-    if pontuacao > get_pontuacao_atual():
-        set_pontuacao_atual(pontuacao)
-        set_movimentos_atual(movimentos)
+    print("desicions", file=sys.stderr, flush=True)
 
-    x, y = pop_movimentos_atual()
+    if HUMANS.quantity_humans() == 0:
+        output = aux(*ZOMBIES.get_survivor_pos())
+    if HUMANS.quantity_humans() == 1 and not output:
+        output = aux(*HUMANS.get_survivor_pos())
 
-    print(f'{x} {y}')
+    if not output:
+        for z in ZOMBIES.get_zombies():
+            HUMANS.zombie_move(z)
+
+        # TODO: VERIFICAR HUMANO MAIS PROXIMO DE UM ZUMBI
+        # TODO: IR ATÉ O PONTO MÉDIO DO CAMINHO PARA SER MAIS RAPIDO
+
+    # Your destination coordinates
+    print(output)
+    output = ""
+    HUMANS.reset_turn()
