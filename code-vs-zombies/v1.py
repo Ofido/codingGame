@@ -89,7 +89,10 @@ class humans:
     def get_survivor_pos(self):
         return self.list_of_humans[list(self.list_of_humans)[0]].get_pos()
 
-    def reset_turn(self):
+    def get_pos_by_id(self, id: int):
+        return self.list_of_humans[id].get_pos()
+
+    def kill_turn(self):
         all_humans_alive = list(self.list_of_humans)
         for human_movies in self.turn_movies:
             all_humans_alive.remove(human_movies)
@@ -156,9 +159,12 @@ class zombie:
 
 class zombies:
     list_of_zombies: dict[int, zombie]
+    died_zombies: dict[int, zombie]
+    turn_movies: list[int]
 
     def __init__(self, list_of_zombies: list) -> None:
         self.list_of_zombies = {}
+        self.turn_movies = []
         for a in list_of_zombies:
             zo = zombie(*a)
             self.list_of_zombies[zo.id] = zo
@@ -166,13 +172,28 @@ class zombies:
     def get_survivor_pos(self):
         return self.list_of_zombies[list(self.list_of_zombies)[0]].get_pos()
 
+    def get_pos_by_id(self, id: int):
+        return self.list_of_zombies[id].get_pos()
+
     def get_zombies(self):
         return (self.list_of_zombies[z] for z in list(self.list_of_zombies))
+
+    def quantity_zombies(self):
+        return len(self.list_of_zombies)
 
     def move_someone(
         self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int
     ):
         self.list_of_zombies[id].move(pos_x, pos_y, future_x, future_y)
+        self.turn_movies.append(id)
+
+    def kill_turn(self):
+        all_zombies_alive = list(self.list_of_zombies)
+        for zombie_movies in self.turn_movies:
+            all_zombies_alive.remove(zombie_movies)
+        for died_zombie in all_zombies_alive:
+            self.died_zombies[died_zombie] = self.list_of_zombies[died_zombie]
+            del self.list_of_zombies[died_zombie]
 
     def __str__(self) -> str:
         return "\n".join([str(self.list_of_zombies[zo]) for zo in self.list_of_zombies])
@@ -245,6 +266,13 @@ ZOMBIES: zombies = zombies(
 )
 print(f"zombies {ZOMBIES}", file=sys.stderr, flush=True)
 print(aux(*PLAYER.get_pos()))
+
+
+def kill_turn() -> None:
+    HUMANS.kill_turn()
+    ZOMBIES.kill_turn()
+
+
 # game loop
 while True:
     output = ""
@@ -262,12 +290,16 @@ while True:
     for i in range(zombie_count):
         ZOMBIES.move_someone(*[int(j) for j in input().split()])
 
+    kill_turn()
+
     print("desicions", file=sys.stderr, flush=True)
 
     if HUMANS.quantity_humans() == 0:
         output = aux(*ZOMBIES.get_survivor_pos())
     if HUMANS.quantity_humans() == 1 and not output:
         output = aux(*HUMANS.get_survivor_pos())
+    if ZOMBIES.quantity_zombies() == 1 and not output:
+        output = aux(*ZOMBIES.get_survivor_pos())
 
     if not output:
         for z in ZOMBIES.get_zombies():
@@ -277,6 +309,8 @@ while True:
         # TODO: IR ATÉ O PONTO MÉDIO DO CAMINHO PARA SER MAIS RAPIDO
 
     # Your destination coordinates
+    if not output:
+        output = aux(*PLAYER.get_pos())
+
     print(output)
     output = ""
-    HUMANS.reset_turn()
