@@ -1,0 +1,114 @@
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | common_layers
+  | env
+  | node_modules
+  | .vscode
+)/
+'''
+[tool.isort]
+line_length = 120
+profile = "black"
+multi_line_output = 3
+known_third_party = [
+    "pandas",
+    "requests",
+    "typing-extensions",
+    "pymysql",
+    "urllib3",
+    "pydantic",
+]
+known_first_party = [
+    "commons",
+    "infra",
+    "app",
+    "domain",
+    "presentation",
+    "iam-sdk-python",
+    "factories",
+]
+[tool.bandit]
+exclude_dirs = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "common_layers",
+    "env",
+    "examples",
+    "node_modules",
+    "docs",
+    "tests/constants.py",
+]
+[tool.coverage.paths]
+source = [
+    "src",
+    "env/lib/python3.12/site-packages/",
+    "venv/lib/python3.12/site-packages/",
+    ".env/lib/python3.12/site-packages/",
+]
+[tool.coverage.run]
+dynamic_context = "test_function"
+source = ["src"]
+# debug = ["trace"]
+source_pkgs = ["domain", "infra", "presentation", "factories"]
+omit = [
+    "**/__init__.py",
+    "**/infra/aws/lambdas/base_lambda.py",
+    "**/infra/aws/lambdas/token_validation_proxy.py",
+]
+branch = true
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+[tool.mypy]
+python_version = "3.12"
+platform = "linux"
+plugins = ["pydantic.mypy"]
+
+exclude = [
+    "common_layers",
+    "docs",
+    "env",
+    ".env",
+    "src/presentation/dto",
+    "setup.py",
+]
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+ignore_missing_imports = true
+
+# for strict mypy: (this is the tricky one :-))
+disallow_untyped_defs = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true

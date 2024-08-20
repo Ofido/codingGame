@@ -1,0 +1,5 @@
+[flake8]
+statstics=True
+count=True
+max-line-length = 120
+exclude = .git, .hg, .mypy_cache, .tox, .venv, _build, buck-out, build, dist, common_layers, env, exemples, node_modules, docs
