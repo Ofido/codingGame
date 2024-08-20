@@ -79,9 +79,7 @@ class humans:
 
     def zombie_move(self, zombie):
         for hu in self.list_of_humans:
-            self.list_of_humans[hu].is_secure = not zombie.line_equ(
-                *self.list_of_humans[hu].get_pos()
-            )
+            self.list_of_humans[hu].is_secure = not zombie.line_equ(*self.list_of_humans[hu].get_pos())
 
     def quantity_humans(self):
         return len(self.list_of_humans)
@@ -113,9 +111,7 @@ class zombie:
     is_alive: bool
     kill_chance: list[str]
 
-    def __init__(
-        self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int
-    ) -> None:
+    def __init__(self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int) -> None:
         self.id = id
         self.pos_x = pos_x
         self.pos_y = pos_y
@@ -181,9 +177,7 @@ class zombies:
     def quantity_zombies(self):
         return len(self.list_of_zombies)
 
-    def move_someone(
-        self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int
-    ):
+    def move_someone(self, id: int, pos_x: int, pos_y: int, future_x: int, future_y: int):
         self.list_of_zombies[id].move(pos_x, pos_y, future_x, future_y)
         self.turn_movies.append(id)
 
@@ -257,13 +251,9 @@ class player:
 print("first", file=sys.stderr, flush=True)
 PLAYER: player = player(*[int(i) for i in input().split()])
 print(f"player {PLAYER}", file=sys.stderr, flush=True)
-HUMANS: humans = humans(
-    [[int(j) for j in input().split()] for _ in range(int(input()))]
-)
+HUMANS: humans = humans([[int(j) for j in input().split()] for _ in range(int(input()))])
 print(f"humans {HUMANS}", file=sys.stderr, flush=True)
-ZOMBIES: zombies = zombies(
-    [[int(j) for j in input().split()] for _ in range(int(input()))]
-)
+ZOMBIES: zombies = zombies([[int(j) for j in input().split()] for _ in range(int(input()))])
 print(f"zombies {ZOMBIES}", file=sys.stderr, flush=True)
 print(aux(*PLAYER.get_pos()))
 
