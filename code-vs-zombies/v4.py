@@ -122,7 +122,7 @@ class Humans:
             is_protected = False
             for zombie in zombies.zombies:
                 # Verifica se Ash está entre o humano e o zumbi
-                if zombie.is_moving_towards(human) and self.is_between(human, ash, zombie):
+                if self.is_between(human, ash, zombie) and zombie.is_moving_towards(human):
                     is_protected = True
                     break  # Se o humano está protegido, não precisa continuar verificando
             if not is_protected:
