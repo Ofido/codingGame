@@ -53,9 +53,9 @@ class Zombie(Entity):
         return self.next_x, self.next_y
 
     def is_moving_towards(self, target: "Entity") -> bool:
-        current_distance = self.distance_to(target)
-        future_distance = math.sqrt((self.next_x - target.x) ** 2 + (self.next_y - target.y) ** 2)
-        return future_distance < current_distance
+        direction_to_target = math.atan2(target.y - self.y, target.x - self.x)
+        current_direction = math.atan2(self.next_y - self.y, self.next_x - self.x)
+        return math.isclose(direction_to_target, current_direction, abs_tol=0.1)  # 0.1 radianos de margem de erro
 
 
 class Ash(Entity):
@@ -74,8 +74,17 @@ class Ash(Entity):
         print(f"Debug: Ash moving towards ({self.x}, {self.y})", file=sys.stderr, flush=True)
 
     def is_protecting(self, human: "Human", zombie: "Zombie") -> bool:
-        # Verifica se Ash está entre o humano e o zumbi
-        return self.distance_to(human) < human.distance_to(zombie)
+        # Verifica se Ash está entre o humano e o zumbi com uma margem de erro (por exemplo, 10% da distância total)
+        distance_human_to_zombie = human.distance_to(zombie)
+        distance_human_to_ash = human.distance_to(self)
+        distance_ash_to_zombie = self.distance_to(zombie)
+
+        # Verifica se a soma das distâncias Ash-Humano e Ash-Zumbi é quase igual à distância Humano-Zumbi
+        if abs((distance_human_to_ash + distance_ash_to_zombie) - distance_human_to_zombie) < (
+            0.1 * distance_human_to_zombie
+        ):
+            return True
+        return False
 
 
 class Humans:
