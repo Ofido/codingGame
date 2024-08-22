@@ -79,6 +79,19 @@ class Ash(Entity):
         distance_human_to_ash = human.distance_to(self)
         distance_ash_to_zombie = self.distance_to(zombie)
 
+        # Debugging prints
+        print(f"Debug: Human {human.entity_id} distance to Ash = {distance_human_to_ash}", file=sys.stderr, flush=True)
+        print(
+            f"Debug: Human {human.entity_id} distance to Zombie {zombie.entity_id} = {distance_human_to_zombie}",
+            file=sys.stderr,
+            flush=True,
+        )
+        print(
+            f"Debug: Ash distance to Zombie {zombie.entity_id} = {distance_ash_to_zombie}",
+            file=sys.stderr,
+            flush=True,
+        )
+
         # Verifica se a soma das distâncias Ash-Humano e Ash-Zumbi é quase igual à distância Humano-Zumbi
         if abs((distance_human_to_ash + distance_ash_to_zombie) - distance_human_to_zombie) < (
             0.1 * distance_human_to_zombie
