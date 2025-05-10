@@ -1,7 +1,7 @@
 import sys
 import heapq
 from collections import deque, namedtuple
-
+# ESSE CÓDIGO CHEGA ATÉ O NIVEL 3 DO DIFICIL
 # Estado: conjunto de caixas + posição do pusher
 State = namedtuple("State", ["boxes", "pusher"])
 
